@@ -1,10 +1,8 @@
 import os, argparse, datetime, time, re, wget, json
 from tqdm import tqdm, trange
 import pandas as pd
-import ssl
-import sys
 
-context = ssl._create_unverified_context()
+import ssl
 
 SEPARATOR = u"\u241D"
 
@@ -58,30 +56,20 @@ if __name__ == "__main__":
     if not os.path.isdir(args.output):
         os.makedirs(args.output)
 
-    filename = wget.download("https://dumps.wikimedia.org/kowiki/latest/kowiki-latest-pages-meta-current.xml.bz2", args.output, 
-        context=context, down_rate=0.01)
-    os.system(f"python WikiExtractor.py -o {args.output} --json {filename}")
+    filename = wget.download("https://dumps.wikimedia.org/kowiki/latest/kowiki-latest-pages-meta-current.xml.bz2", args.output,
+    context = ssl._create_unverified_context(), down_rate=0.01)
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    os.system(f"python {dir_path}/WikiExtractor.py -o {args.output} --json {filename}")
 
     # text 여러줄 띄기를 한줄 띄기로 합침
     dataset = []
     filenames = list_wiki(args.output)
-    success_num = 0
-    error_num = 0
     for filename in filenames:
-        with open(filename, "r", encoding="utf-8") as f:
+        with open(filename, "r") as f:
             for line in f:
                 line = line.strip()
                 if line:
-                    try:
-                        dataset.append(trim_text(line))
-                        success_num += 1
-                    except:
-                        error_num += 1
-                        # print("Error:", line)
-                        # input("Continue: Enter")
-                        continue
-                sys.stdout.write(f'\r성공/실패: {success_num}/{error_num}')
-                sys.stdout.flush()
+                    dataset.append(trim_text(line))
     
     # 자장파일 결정
     now = datetime.datetime.now().strftime("%Y%m%d")
